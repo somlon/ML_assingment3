@@ -4,6 +4,67 @@
 
 ---
 
+## 2026-06-17 — Phase 2 진행: 전처리 + XGBoost 모델링 노트북 작성·실행 시작
+
+### 완료한 일
+
+1. **전처리 + 모델링 노트북 작성 (`claude/elegant-wright-tx82f9` 브랜치)**
+   - `notebooks/02_preprocessing_and_modeling.ipynb` 신규 작성 (31셀: markdown 15 + code 16)
+   - 단일 노트북, 셀 단위 구성 (모듈 디렉터리 없이)
+   - 모든 컬럼 그룹·시간대 버킷 경계·임계값·시드를 `Config` dataclass 에 집중 (하드코딩 회피)
+   - 환경변수 `ASSIGNMENT3_TRAIN`, `ASSIGNMENT3_TEST`, `ASSIGNMENT3_SUBMISSION` 으로 오버라이드 지원
+   - `.gitignore` 에 `submissions/` 추가
+   - PR #8 (`claude/elegant-wright-tx82f9` → `develop`) 머지됨
+
+2. **이슈 기록 (`chore/issue-submission-dir` 브랜치)**
+   - 노트북 실행 중 `Config.submission_dir = Path.cwd() / "submissions"` 가 Jupyter cwd 의존 → `notebooks/submissions/` 에 생성되는 현상 발견
+   - 기능적 결함은 아니나 직관성 저하
+   - 규칙 #4 에 따라 `issue.md` 에 기록만 (해결 미수행)
+   - PR #9 (`chore/issue-submission-dir` → `agent`) 생성
+
+3. **로컬 환경 셋업 + 노트북 실행 검증 (셀 1~8)**
+   - 로컬 conda 환경 `2026ML` 에 `xgboost-3.2.0` 설치
+   - 셀 1 (라이브러리/시드): 통과
+   - 셀 2 (Config + 경로): `data/` 자동 인식, `train_set.csv` / `test_set.csv` 매칭 성공
+   - 셀 3 (데이터 로드): train 800,000 × 19, test 50,936 × 18, 라벨 결측 74.49% — EDA 일치
+   - 셀 4 (컬럼 정리): `Cancelled`, `Diverted`, `Airline`, `ID` drop, 15컬럼 잔존
+   - 셀 5 (시각 → 4분할 시간대 버킷): 오전 33.7% / 오후 32.5% / 저녁 20.5% / 새벽 2.4% / `__missing__` 10.9%, Duration mean 137분
+   - 셀 6 (결측 플래그): 7개 컬럼 약 10.9% (단, `Tail_Number_is_missing` 은 항상 0 — 상수 컬럼, 무해)
+   - 셀 7 (파생): Route 6,674 / Carrier_Route 20,853
+   - 셀 8 (라벨/언라벨 분리): labeled 204,065 / unlabeled 595,935 / test 50,936, base rate 0.1767 (EDA 정확 일치)
+   - 셀 9 (인코더 정의): 완료
+   - 셀 10 (단일 split sanity): X_tr 163,252 / X_va 40,813 / 33 컬럼, 컬럼 일치 True, object 잔존 X
+     - NaN 잔존: `Estimated_Duration_min` 20.47% / `Arr_Hour` 10.86% / `Dep_Hour` 10.77% — **XGBoost native missing 처리 활용 예정**
+
+### 다음 단계 (즉시)
+
+- 셀 11~12: **XGBoost 베이스라인 (단일 split)** Log-loss 측정
+- 셀 13~14: **Stratified 5-Fold CV** (과제 필수)
+- 셀 15~16: 하이퍼파라미터 튜닝 (4 후보 grid)
+- 셀 17~18: 준지도 학습 (pseudo-labeling) 시도 → CV 개선 여부 판단
+- 셀 19~22: 최종 학습 + test 예측 + 제출 CSV 생성
+
+### 환경 메모
+
+- 로컬 작업 디렉터리: `C:\Users\ftqwe\anaconda3\envs\JUPYTER\ML PRO\ML_assingment3`
+- 커널 환경: `C:\Users\ftqwe\anaconda3\envs\2026ML\python.exe` (폴더 이름과 무관)
+- Jupyter cwd: `notebooks/` → 제출 폴더가 `notebooks/submissions/` 에 생성됨 (issue.md 기록됨)
+
+### 브랜치 / PR 추가 분
+
+| 브랜치 | 역할 | 상태 |
+| --- | --- | --- |
+| `claude/elegant-wright-tx82f9` | 전처리·모델링 노트북 작성 | 머지 후 보존 |
+| `chore/issue-submission-dir` | submission_dir 이슈 기록 | PR #9 (대기) |
+| `docs/progress-phase2-start` | Phase 2 진행 로그 업데이트 | 본 PR |
+
+| PR | 제목 | 상태 |
+| --- | --- | --- |
+| #8 | Add preprocessing & XGBoost modeling notebook | merged → develop |
+| #9 | Record submission_dir cwd dependency issue | open → agent |
+
+---
+
 ## 2026-06-16 — Phase 1 완료: EDA 노트북 작성·문서화
 
 ### 완료한 일
