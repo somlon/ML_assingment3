@@ -1,0 +1,16 @@
+# Data files — 데이터는 별도 다운로드 (assignment 공지)
+data/*.csv
+data/*.zip
+
+# Python
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+
+# Jupyter
+*.ipynb_checkpoints
+
+# OS / editor
+.DS_Store
+.idea/
+.vscode/
